@@ -49,17 +49,35 @@ const publicKeyPath = resolve(keysDirectory, 'public.jwk.json');
 
 export async function createKeys() {
     const { privateKey, publicKey } = await jose.generateKeyPair('ES256', { extractable: true });
-    const privateJwk = await jose.exportJWK(privateKey);
-    const publicJwk = await jose.exportJWK(publicKey);
+
+    //why do we need the pair of public and private keys before exporting to JWK?
+    // The raw key pair is needed to perform cryptographic operations directly, such as signing and verifying.
+    // Exporting to JWK is mainly for storage and interoperability purposes.
+    //Why not create the JWKs directly without generating the raw key pair first?
+    // Directly creating JWKs without the raw key pair would limit our ability to perform cryptographic operations like signing and verifying within this code.
+    // Therefore, we first generate the raw key pair and then export them to JWK format for storage and interoperability.
+
+    console.log('Generated key pair (raw):', { privateKey, publicKey });
+
+    console.log('Generated key pair', { privateKey, publicKey });
+    console.log('Exporting JWKs...');
+    const privateJwk = await jose.exportJWK(privateKey); // Export the private key to JWK format
+    const publicJwk = await jose.exportJWK(publicKey); // Export the public key to JWK format
+    console.log('Private key JWK:', privateJwk);
+    console.log('Public key JWK:', publicJwk);
+
+    console.log('Assigning key ID and usage...');
     const kid = randomUUID();
 
     privateJwk.alg = 'ES256';
     privateJwk.use = 'sig';
     privateJwk.kid = kid;
+    console.log('Private key JWK after assigning kid and usage:', privateJwk);
 
     publicJwk.alg = 'ES256';
     publicJwk.use = 'sig';
     publicJwk.kid = kid;
+    console.log('Public key JWK after assigning kid and usage:', publicJwk);
 
     await mkdir(keysDirectory, { recursive: true });
     await Promise.all([

@@ -23,6 +23,12 @@ node .\create-keys.js
 
 This writes `keys/private.jwk.json` and `keys/public.jwk.json`. The JWT scripts load those files, so they use the same key pair even when run in separate processes.
 
+### Why two keys?
+
+ES256 uses asymmetric cryptography: the private JWK signs tokens and must remain secret, while the matching public JWK verifies signatures and can be distributed to token consumers. This lets a consumer trust tokens issued by this application without also gaining the ability to create valid tokens.
+
+A JWK is only a JSON representation of cryptographic key material. Although JWK files can be created directly, their values must form a valid related key pair. Generating the pair with a cryptographic library and exporting each key as a JWK safely creates that relationship; manually choosing fields such as the EC public coordinates `x` and `y` is not secure or practical.
+
 ## Generate a token
 
 ```powershell
