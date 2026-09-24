@@ -13,6 +13,16 @@ A small Node.js example that creates and validates ES256 JSON Web Tokens (JWTs) 
 npm install
 ```
 
+## Create keys
+
+Generate a local ES256 key pair before generating or validating tokens:
+
+```powershell
+node .\create-keys.js
+```
+
+This writes `keys/private.jwk.json` and `keys/public.jwk.json`. The JWT scripts load those files, so they use the same key pair even when run in separate processes.
+
 ## Generate a token
 
 ```powershell
@@ -22,7 +32,7 @@ node .\generate-jwt.js
 The command writes a signed JWT to standard output. Generated tokens include these claims:
 
 - Issuer: `https://idp.example.com`
-- Audience: `https://api.example1.com`
+- Audience: `https://api.example.com`
 - Subject: `user@example.com`
 - Expiration: six minutes after creation
 
@@ -36,10 +46,6 @@ node .\validate-jwt.js
 
 The validator checks the token signature, issuer, and audience, then prints the decoded payload when valid.
 
-## Audience configuration
-
-The generator currently sets the audience to `https://api.example1.com`, but the validator expects `https://api.example.com`. A generated token will therefore fail validation until both scripts use the same audience value.
-
 ## Security
 
-`generate-jwt.js` contains an embedded private JWK solely as an example. Do not use it in production or commit real private keys to source control. Store signing keys in a secrets manager or another protected runtime configuration mechanism, and distribute only the matching public JWK to token consumers.
+Do not use the generated local keys in production or commit real private keys to source control. The private JWK includes `d`; never commit or share it. The public JWK has `crv`, `kty`, `x`, `y`, `alg`, `use`, and `kid`, but no `d`. Store signing keys in a secrets manager or another protected runtime configuration mechanism, and distribute only the matching public JWK to token consumers.
