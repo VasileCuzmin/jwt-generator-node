@@ -82,6 +82,8 @@ sequenceDiagram
 	Receiver->>Receiver: Decrypt JWE, then verify recovered JWS
 ```
 
+### Example here: https://dev.to/mayank_tamrkar/jwt-vs-jws-vs-jwe-whats-the-difference-when-to-use-each-16l2
+
 ### Run the JWS example
 
 The JWS example signs a payment event as the issuer, then verifies and decodes it as the receiver. Its payload is readable by anyone with the compact JWS value, so the signature protects integrity but does not provide secrecy.
