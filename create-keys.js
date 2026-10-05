@@ -46,9 +46,12 @@ const projectDirectory = dirname(fileURLToPath(import.meta.url));
 const keysDirectory = resolve(projectDirectory, 'keys');
 const privateKeyPath = resolve(keysDirectory, 'private.jwk.json');
 const publicKeyPath = resolve(keysDirectory, 'public.jwk.json');
+const encryptionPrivateKeyPath = resolve(keysDirectory, 'encryption-private.jwk.json');
+const encryptionPublicKeyPath = resolve(keysDirectory, 'encryption-public.jwk.json');
 
 export async function createKeys() {
     const { privateKey, publicKey } = await jose.generateKeyPair('ES256', { extractable: true });
+    const { privateKey: encryptionPrivateKey, publicKey: encryptionPublicKey } = await jose.generateKeyPair('RSA-OAEP-256', { extractable: true });
 
     //why do we need the pair of public and private keys before exporting to JWK?
     // The raw key pair is needed to perform cryptographic operations directly, such as signing and verifying.
@@ -79,13 +82,27 @@ export async function createKeys() {
     publicJwk.kid = kid;
     console.log('Public key JWK after assigning kid and usage:', publicJwk);
 
+    const encryptionPrivateJwk = await jose.exportJWK(encryptionPrivateKey);
+    const encryptionPublicJwk = await jose.exportJWK(encryptionPublicKey);
+    const encryptionKid = randomUUID();
+
+    encryptionPrivateJwk.alg = 'RSA-OAEP-256';
+    encryptionPrivateJwk.use = 'enc';
+    encryptionPrivateJwk.kid = encryptionKid;
+
+    encryptionPublicJwk.alg = 'RSA-OAEP-256';
+    encryptionPublicJwk.use = 'enc';
+    encryptionPublicJwk.kid = encryptionKid;
+
     await mkdir(keysDirectory, { recursive: true });
     await Promise.all([
         writeFile(privateKeyPath, `${JSON.stringify(privateJwk, null, 2)}\n`, 'utf8'),
-        writeFile(publicKeyPath, `${JSON.stringify(publicJwk, null, 2)}\n`, 'utf8')
+        writeFile(publicKeyPath, `${JSON.stringify(publicJwk, null, 2)}\n`, 'utf8'),
+        writeFile(encryptionPrivateKeyPath, `${JSON.stringify(encryptionPrivateJwk, null, 2)}\n`, 'utf8'),
+        writeFile(encryptionPublicKeyPath, `${JSON.stringify(encryptionPublicJwk, null, 2)}\n`, 'utf8')
     ]);
 
-    return { privateJwk, publicJwk };
+    return { privateJwk, publicJwk, encryptionPrivateJwk, encryptionPublicJwk };
 }
 
 async function loadJwk(path) {
@@ -106,6 +123,14 @@ export function loadPrivateJwk() {
 
 export function loadPublicJwk() {
     return loadJwk(publicKeyPath);
+}
+
+export function loadEncryptionPrivateJwk() {
+    return loadJwk(encryptionPrivateKeyPath);
+}
+
+export function loadEncryptionPublicJwk() {
+    return loadJwk(encryptionPublicKeyPath);
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {

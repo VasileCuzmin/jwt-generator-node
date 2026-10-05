@@ -6,7 +6,10 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "generate-jwt": "node generate-jwt.js",
-    "validate-jwt": "node validate-jwt.js"
+    "validate-jwt": "node validate-jwt.js",
+    "jws-example": "node jws-example.js",
+    "jwe-example": "node jwe-example.js",
+    "nested-jws-jwe-example": "node nested-jws-jwe-example.js"
   },
   "keywords": [],
   "author": "",
